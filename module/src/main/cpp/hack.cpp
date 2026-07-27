@@ -18,20 +18,22 @@
 #include <array>
 
 void hack_start(const char *game_data_dir) {
+    static const char *kLibs[] = {"libil2cpp.so", "libunity.so", nullptr};
     bool load = false;
-    for (int i = 0; i < 10; i++) {
-        void *handle = xdl_open("libil2cpp.so", 0);
-        if (handle) {
+    for (int i = 0; i < 30 && !load; i++) {
+        for (int k = 0; kLibs[k]; k++) {
+            void *handle = xdl_open(kLibs[k], 0);
+            if (!handle) continue;
+            LOGI("il2cpp via %s", kLibs[k]);
             load = true;
             il2cpp_api_init(handle);
             il2cpp_dump(game_data_dir);
             break;
-        } else {
-            sleep(1);
         }
+        if (!load) sleep(1);
     }
     if (!load) {
-        LOGI("libil2cpp.so not found in thread %d", gettid());
+        LOGI("libil2cpp/libunity not found in thread %d", gettid());
     }
 }
 
